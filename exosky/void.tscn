@@ -1,0 +1,58 @@
+[gd_scene load_steps=6 format=3 uid="uid://bw6kjah4slb71"]
+
+[sub_resource type="GDScript" id="GDScript_n4247"]
+script/source = "extends Node
+
+## How far we see.
+@export var VisibilityRange = 600
+const __STAR = preload(\"res://star.tscn\")
+@onready var __void : Node3D = $Starfield
+
+
+func _ready() -> void:
+	var file : FileAccess = FileAccess.open(\"res://data/output\", FileAccess.READ)
+	if file.is_open():
+		file.get_csv_line()
+		while true:
+			var values : PackedStringArray = file.get_csv_line()
+			if values.size() != 5:
+				break
+			var data : StarData = StarData.new(values)
+			if data.d < self.VisibilityRange:
+				var star = self.__STAR.instantiate()
+				star.set_position(Vector3(data.x, data.y, data.z * 2.0) * 100.0)
+				star.scale *= data.m * 1.0
+				self.__void.add_child(star)
+		file.close()
+	else:
+		push_error(\"Unable to open a data file.\")
+	return
+"
+
+[sub_resource type="ViewportTexture" id="ViewportTexture_jbxgx"]
+viewport_path = NodePath("Starfield")
+
+[sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_fyncs"]
+resource_local_to_scene = true
+panorama = SubResource("ViewportTexture_jbxgx")
+
+[sub_resource type="Sky" id="Sky_d78hs"]
+sky_material = SubResource("PanoramaSkyMaterial_fyncs")
+
+[sub_resource type="Environment" id="Environment_36qtr"]
+background_mode = 1
+background_color = Color(0.310617, 0.310617, 0.310617, 1)
+sky = SubResource("Sky_d78hs")
+ambient_light_source = 1
+reflected_light_source = 1
+glow_enabled = true
+glow_strength = 2.0
+glow_bloom = 1.0
+
+[node name="Void" type="Node3D"]
+script = SubResource("GDScript_n4247")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_36qtr")
+
+[node name="Starfield" type="Node3D" parent="."]

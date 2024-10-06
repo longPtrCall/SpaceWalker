@@ -1,0 +1,249 @@
+[gd_scene load_steps=20 format=3 uid="uid://bx852ydv58u86"]
+
+[ext_resource type="Texture2D" uid="uid://b6q53ulkvoj82" path="res://drawable/8k_earth_daymap.jpg" id="1_e7vry"]
+[ext_resource type="Texture2D" uid="uid://77lstlvmcn4m" path="res://drawable/8k_earth_normal_map.jpg" id="2_5huwd"]
+[ext_resource type="Texture2D" uid="uid://cv82ormsf3jrd" path="res://drawable/8k_sun.jpg" id="3_50poc"]
+[ext_resource type="Texture2D" uid="uid://drqmuixd0tmf1" path="res://drawable/8k_moon.jpg" id="3_ahju4"]
+[ext_resource type="Shader" path="res://addons/zylann.atmosphere/shaders/planet_atmosphere_no_clouds.gdshader" id="3_i3nw6"]
+[ext_resource type="PackedScene" uid="uid://bw6kjah4slb71" path="res://void.tscn" id="6_anwdg"]
+
+[sub_resource type="GDScript" id="GDScript_qcs8v"]
+script/source = "extends Node3D
+"
+
+[sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_qlruq"]
+
+[sub_resource type="Sky" id="Sky_aoxd5"]
+sky_material = SubResource("PanoramaSkyMaterial_qlruq")
+
+[sub_resource type="Environment" id="Environment_uy6r0"]
+background_mode = 2
+sky = SubResource("Sky_aoxd5")
+ambient_light_source = 1
+reflected_light_source = 1
+glow_enabled = true
+glow_strength = 2.0
+glow_bloom = 1.0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rlmb7"]
+albedo_texture = ExtResource("1_e7vry")
+normal_enabled = true
+normal_texture = ExtResource("2_5huwd")
+
+[sub_resource type="SphereMesh" id="SphereMesh_rahph"]
+material = SubResource("StandardMaterial3D_rlmb7")
+radius = 0.05
+height = 0.1
+radial_segments = 256
+rings = 128
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_o3ns7"]
+render_priority = 0
+shader = ExtResource("3_i3nw6")
+shader_parameter/u_planet_radius = 0.05
+shader_parameter/u_atmosphere_height = 0.01
+shader_parameter/u_sun_position = Vector3(1000, 0, 0)
+shader_parameter/u_density = 10.5
+shader_parameter/u_scattering_strength = 0.045
+shader_parameter/u_scattering_wavelengths = Vector3(700, 530, 440)
+shader_parameter/u_atmosphere_modulate = Color(1, 1, 1, 1)
+shader_parameter/u_atmosphere_ambient_color = Color(0, 0, 0.002, 1)
+shader_parameter/u_clip_mode = false
+shader_parameter/u_sphere_depth_factor = 0.0
+
+[sub_resource type="SphereMesh" id="SphereMesh_sw5kx"]
+material = SubResource("ShaderMaterial_o3ns7")
+radius = 0.055
+height = 0.11
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pku3n"]
+albedo_texture = ExtResource("3_ahju4")
+metallic_specular = 0.0
+
+[sub_resource type="SphereMesh" id="SphereMesh_s6iqe"]
+material = SubResource("StandardMaterial3D_pku3n")
+radius = 0.013
+height = 0.025
+radial_segments = 128
+rings = 64
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_2ypb4"]
+shading_mode = 0
+disable_ambient_light = true
+disable_fog = true
+albedo_texture = ExtResource("3_50poc")
+disable_receive_shadows = true
+
+[sub_resource type="SphereMesh" id="SphereMesh_wfgjo"]
+material = SubResource("StandardMaterial3D_2ypb4")
+radius = 109.29
+height = 218.58
+radial_segments = 128
+rings = 64
+
+[sub_resource type="GDScript" id="GDScript_qx1we"]
+script/source = "class_name FreeLookCamera extends Camera3D
+
+# Modifier keys' speed multiplier
+const SHIFT_MULTIPLIER = 1000.0
+const ALT_MULTIPLIER = 1.0 / SHIFT_MULTIPLIER + 0.1
+
+
+@export_range(0.0, 1.0) var sensitivity: float = 0.25
+
+# Mouse state
+var _mouse_position = Vector2(0.0, 0.0)
+var _total_pitch = 0.0
+
+# Movement state
+var _direction = Vector3(0.0, 0.0, 0.0)
+var _velocity = Vector3(0.0, 0.0, 0.0)
+var _acceleration = 30
+var _deceleration = -10
+var _vel_multiplier = 4
+
+# Keyboard state
+var _w = false
+var _s = false
+var _a = false
+var _d = false
+var _q = false
+var _e = false
+var _shift = false
+var _alt = false
+
+func _input(event):
+	# Receives mouse motion
+	if event is InputEventMouseMotion:
+		_mouse_position = event.relative
+	
+	# Receives mouse button input
+	if event is InputEventMouseButton:
+		match event.button_index:
+			MOUSE_BUTTON_RIGHT: # Only allows rotation if right click down
+				Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED if event.pressed else Input.MOUSE_MODE_VISIBLE)
+			MOUSE_BUTTON_WHEEL_UP: # Increases max velocity
+				_vel_multiplier = clamp(_vel_multiplier * 1.1, 0.2, 20)
+			MOUSE_BUTTON_WHEEL_DOWN: # Decereases max velocity
+				_vel_multiplier = clamp(_vel_multiplier / 1.1, 0.2, 20)
+
+	# Receives key input
+	if event is InputEventKey:
+		match event.keycode:
+			KEY_W:
+				_w = event.pressed
+			KEY_S:
+				_s = event.pressed
+			KEY_A:
+				_a = event.pressed
+			KEY_D:
+				_d = event.pressed
+			KEY_Q:
+				_q = event.pressed
+			KEY_E:
+				_e = event.pressed
+			KEY_SHIFT:
+				_shift = event.pressed
+			KEY_ALT:
+				_alt = event.pressed
+
+
+# Updates mouselook and movement every frame
+func _process(delta):
+	_update_mouselook()
+	_update_movement(delta)
+	if Input.is_key_pressed(KEY_0):
+		self.position = Vector3.ZERO
+
+
+# Updates camera movement
+func _update_movement(delta):
+	# Computes desired direction from key states
+	_direction = Vector3(
+		(_d as float) - (_a as float), 
+		(_e as float) - (_q as float),
+		(_s as float) - (_w as float)
+	)
+	
+	# Computes the change in velocity due to desired direction and \"drag\"
+	# The \"drag\" is a constant acceleration on the camera to bring it's velocity to 0
+	var offset = _direction.normalized() * _acceleration * _vel_multiplier * delta \\
+		+ _velocity.normalized() * _deceleration * _vel_multiplier * delta
+	
+	# Compute modifiers' speed multiplier
+	var speed_multi = 1
+	if _shift: speed_multi *= SHIFT_MULTIPLIER
+	if _alt: speed_multi *= ALT_MULTIPLIER
+	
+	# Checks if we should bother translating the camera
+	if _direction == Vector3.ZERO and offset.length_squared() > _velocity.length_squared():
+		# Sets the velocity to 0 to prevent jittering due to imperfect deceleration
+		_velocity = Vector3.ZERO
+	else:
+		# Clamps speed to stay within maximum value (_vel_multiplier)
+		_velocity.x = clamp(_velocity.x + offset.x, -_vel_multiplier, _vel_multiplier)
+		_velocity.y = clamp(_velocity.y + offset.y, -_vel_multiplier, _vel_multiplier)
+		_velocity.z = clamp(_velocity.z + offset.z, -_vel_multiplier, _vel_multiplier)
+	
+		translate(_velocity * delta * speed_multi)
+
+# Updates mouse look 
+func _update_mouselook():
+	# Only rotates mouse if the mouse is captured
+	if Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
+		_mouse_position *= sensitivity
+		var yaw = _mouse_position.x
+		var pitch = _mouse_position.y
+		_mouse_position = Vector2(0, 0)
+		
+		# Prevents looking up/down too far
+		pitch = clamp(pitch, -90 - _total_pitch, 90 - _total_pitch)
+		_total_pitch += pitch
+	
+		rotate_y(deg_to_rad(-yaw))
+		rotate_object_local(Vector3(1,0,0), deg_to_rad(-pitch))
+"
+
+[node name="Main" type="Node3D"]
+script = SubResource("GDScript_qcs8v")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_uy6r0")
+
+[node name="Earth" type="Node3D" parent="."]
+transform = Transform3D(-0.611527, 0, -0.791224, 0, 1, 0, 0.791224, 0, -0.611527, 0, 0, 0)
+
+[node name="Mesh" type="MeshInstance3D" parent="Earth"]
+mesh = SubResource("SphereMesh_rahph")
+skeleton = NodePath("../..")
+
+[node name="Atmosphere" type="MeshInstance3D" parent="Earth"]
+mesh = SubResource("SphereMesh_sw5kx")
+
+[node name="Moon" type="Node3D" parent="Earth"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.108745, 0, -0.140699)
+
+[node name="Mesh" type="MeshInstance3D" parent="Earth/Moon"]
+mesh = SubResource("SphereMesh_s6iqe")
+
+[node name="Sun" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3000, 0, 0)
+
+[node name="Mesh" type="MeshInstance3D" parent="Sun"]
+gi_lightmap_scale = 3
+mesh = SubResource("SphereMesh_wfgjo")
+
+[node name="Light" type="DirectionalLight3D" parent="Sun"]
+transform = Transform3D(0.267238, 0, 0.96363, 0, 1, 0, -0.96363, 0, 0.267238, 0, 0, 0)
+directional_shadow_mode = 0
+directional_shadow_max_distance = 100222.0
+sky_mode = 1
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(0.516847, 0, -0.856078, 0, 1, 0, 0.856078, 0, 0.516847, -0.0413354, 0, 0.177715)
+current = true
+fov = 60.0
+far = 500000.0
+script = SubResource("GDScript_qx1we")
+
+[node name="Void" parent="." instance=ExtResource("6_anwdg")]

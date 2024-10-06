@@ -1,0 +1,15 @@
+[gd_scene load_steps=3 format=3 uid="uid://cruuayqusi1wd"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jhkod"]
+shading_mode = 0
+disable_ambient_light = true
+disable_fog = true
+
+[sub_resource type="SphereMesh" id="SphereMesh_cmgha"]
+material = SubResource("StandardMaterial3D_jhkod")
+radial_segments = 8
+rings = 4
+
+[node name="Star" type="MeshInstance3D"]
+cast_shadow = 0
+mesh = SubResource("SphereMesh_cmgha")
