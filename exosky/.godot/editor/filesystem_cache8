@@ -1,10 +1,11 @@
 ea4bc82a6ad023ab7ee23ee620429895
-::res://::1728231692
+::res://::1728294625
+export_presets.cfg::TextFile::-1::1728243410::0::1::::<><>::
 icon.svg::CompressedTexture2D::8128087490049945016::1728199908::1728231304::1::::<><>::
-main.tscn::PackedScene::4070759545660616601::1728231676::0::1::::<><>::uid://b6q53ulkvoj82::::res://drawable/8k_earth_daymap.jpg<>uid://77lstlvmcn4m::::res://drawable/8k_earth_normal_map.jpg<>uid://cv82ormsf3jrd::::res://drawable/8k_sun.jpg<>uid://drqmuixd0tmf1::::res://drawable/8k_moon.jpg<>res://addons/zylann.atmosphere/shaders/planet_atmosphere_no_clouds.gdshader<>uid://bw6kjah4slb71::::res://void.tscn
+main.tscn::PackedScene::4070759545660616601::1728243345::0::1::::<><>::uid://b6q53ulkvoj82::::res://drawable/8k_earth_daymap.jpg<>uid://77lstlvmcn4m::::res://drawable/8k_earth_normal_map.jpg<>uid://cv82ormsf3jrd::::res://drawable/8k_sun.jpg<>uid://drqmuixd0tmf1::::res://drawable/8k_moon.jpg<>res://addons/zylann.atmosphere/shaders/planet_atmosphere_no_clouds.gdshader<>uid://bw6kjah4slb71::::res://void.tscn
 star.tscn::PackedScene::6008554890379659319::1728231263::0::1::::<><>::
 star_data.gd::GDScript::-1::1728217449::0::1::::StarData<>Object<>::
-void.tscn::PackedScene::3995194208334222134::1728231676::0::1::::<><>::
+void.tscn::PackedScene::3995194208334222134::1728243345::0::1::::<><>::
 ::res://addons/::1728204226
 ::res://addons/zylann.atmosphere/::1728231304
 blue_noise.png::CompressedTexture2D::5851482998193470252::1728204226::1728231304::1::::<><>::

@@ -4,7 +4,7 @@
 script/source = "extends Node
 
 ## How far we see.
-@export var VisibilityRange = 600
+@export var VisibilityRange = 1200000000
 const __STAR = preload(\"res://star.tscn\")
 @onready var __void : Node3D = $Starfield
 
@@ -20,8 +20,8 @@ func _ready() -> void:
 			var data : StarData = StarData.new(values)
 			if data.d < self.VisibilityRange:
 				var star = self.__STAR.instantiate()
-				star.set_position(Vector3(data.x, data.y, data.z * 2.0) * 100.0)
-				star.scale *= data.m * 1.0
+				star.set_position(Vector3(data.x, data.y, data.z * 2.0) * 10.0)
+				star.scale *= 10.5
 				self.__void.add_child(star)
 		file.close()
 	else:
